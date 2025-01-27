@@ -1,0 +1,50 @@
+services:
+  mysql:
+    image: mysql:8.0
+    container_name: bd_mysql
+    ports:
+      - "3306:3306"
+    environment:
+      MYSQL_ROOT_PASSWORD: bolson
+      MYSQL_DATABASE: dbmalaga
+      MYSQL_USER: frodo
+      MYSQL_PASSWORD: bolson
+    volumes:
+      - bd_mysql_data:/var/lib/mysql
+      - ./scripts/pueblosmalaga.sql:/docker-entrypoint-initdb.d/pueblosmalaga.sql
+    networks:
+      - bd_network
+
+  apache:
+    image: php:8.1-apache
+    container_name: bd_apache
+    ports:
+      - "8099:80"
+    volumes:
+      - ./html:/var/www/html
+    networks:
+      - bd_network
+    build:
+      context: .
+      dockerfile: Dockerfile
+
+  phpmyadmin:
+    image: phpmyadmin:latest
+    container_name: bd_phpmyadmin
+    restart: unless-stopped
+    environment:
+      PMA_HOST: bd_mysql
+      PMA_USER: frodo
+      PMA_PASSWORD: bolson
+    ports:
+      - "8098:80"
+    networks:
+      - bd_network
+
+volumes:
+  bd_mysql_data:
+
+networks:
+  bd_network:
+    driver: bridge
+
